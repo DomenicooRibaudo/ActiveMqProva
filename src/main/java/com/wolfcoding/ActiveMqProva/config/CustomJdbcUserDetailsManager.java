@@ -21,12 +21,6 @@ public class CustomJdbcUserDetailsManager extends JdbcUserDetailsManager {
     @Autowired
     private UserRowMapper userRowMapper;
 
-//    public CustomJdbcUserDetailsManager(UserRowMapper userRowMapper, NamedParameterJdbcTemplate jdbcTemplate) {
-//        super();
-////        this.setDataSource(dataSource);
-//        this.userRowMapper = userRowMapper;
-//        this.jdbcTemplate = jdbcTemplate;
-//    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
