@@ -16,11 +16,17 @@ import java.util.Map;
 @Component
 public class CustomJdbcUserDetailsManager extends JdbcUserDetailsManager {
 
-    @Autowired
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-    @Autowired
     private UserRowMapper userRowMapper;
 
+
+    @Autowired
+    public CustomJdbcUserDetailsManager(DataSource dataSource, UserRowMapper userRowMapper) {
+        super();
+        this.setDataSource(dataSource);
+        this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
+        this.userRowMapper = userRowMapper;
+    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
