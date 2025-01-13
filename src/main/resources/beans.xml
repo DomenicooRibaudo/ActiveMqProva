@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                               http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+    <!-- Definizione del bean per JmsTemplate -->
+    <bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="connectionFactory"/>
+    </bean>
+
+    <!-- Definizione del bean per PersonConsumer -->
+    <bean id="personConsumer" class="com.wolfcoding.ActiveMqProva.service.PersonConsumer"/>
+
+    <!-- Configurazione del DefaultMessageListenerContainer per il consumer -->
+    <bean id="listenerContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+        <property name="connectionFactory" ref="connectionFactory"/>
+        <property name="destinationName" value="test.person"/>
+        <property name="messageListener" ref="personConsumer"/>
+    </bean>
+    <!-- Definizione del bean per PersonProducer -->
+    <bean id="personProducer" class="com.wolfcoding.ActiveMqProva.service.PersonProducer">
+        <constructor-arg ref="jmsTemplate"/>
+    </bean>
+
+    <!-- Definizione del connectionFactory -->
+    <bean id="connectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+        <property name="brokerURL" value="tcp://localhost:61616"/>
+    </bean>
+</beans>
