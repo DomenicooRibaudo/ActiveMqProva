@@ -36,7 +36,7 @@ public class CustomJdbcUserDetailsManager extends JdbcUserDetailsManager {
 
             MapSqlParameterSource sqlParameters = new MapSqlParameterSource();
             sqlParameters.addValue("username", username);
-            return this.namedParameterJdbcTemplate.queryForObject("SELECT username, password, enabled FROM users WHERE username = :username", sqlParameters, userRowMapper);
+            return this.namedParameterJdbcTemplate.queryForObject("SELECT id, username, password, enabled FROM users WHERE username = :username", sqlParameters, userRowMapper);
         } catch (Exception e) {
             throw new UsernameNotFoundException("Utente non trovato: " + username, e);
         }

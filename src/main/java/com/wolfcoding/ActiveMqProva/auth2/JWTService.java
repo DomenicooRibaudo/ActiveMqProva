@@ -6,9 +6,11 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.function.Function;
 
@@ -19,10 +21,21 @@ public class JWTService {
 
     private static final int EXPIRATION_TIME = 86400000;
 
-    public JWTService() {
-        String secretString = "45314623456452675263462466453634632656425745745734563634556645267547345676756736gfhdzbndzfbdfhzdfzdrgrby4e6ba463btrta2323erfc3w543b6";
-        byte[] KeyBytes = Base64.getDecoder().decode(secretString.getBytes(StandardCharsets.UTF_8));
-        this.key = new SecretKeySpec(KeyBytes, secretString);
+
+    public JWTService() throws NoSuchAlgorithmException {
+        // Sostituisci questa stringa con la chiave Base64 generata dal passo precedente
+        String secretBase64 = keyGenerator();
+        byte[] decodedKey = java.util.Base64.getDecoder().decode(secretBase64);
+        this.key = new SecretKeySpec(decodedKey, SignatureAlgorithm.HS512.getJcaName());
+    }
+
+    private String keyGenerator() throws NoSuchAlgorithmException {
+        KeyGenerator keyGen = KeyGenerator.getInstance("HmacSHA512");
+        keyGen.init(512); // Genera una chiave di 512 bit
+        SecretKey secretKey = keyGen.generateKey();
+        String encodedKey = java.util.Base64.getEncoder().encodeToString(secretKey.getEncoded());
+        System.out.println("Chiave Base64: " + encodedKey);
+        return encodedKey;
     }
 
     public String generateToken(String username, String role) {
