@@ -31,6 +31,9 @@ public class CustomJdbcUserDetailsManager extends JdbcUserDetailsManager {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         try {
+            System.out.println("Connected Database: " +
+                    namedParameterJdbcTemplate.getJdbcTemplate().queryForObject("SELECT current_database()", String.class));
+
             MapSqlParameterSource sqlParameters = new MapSqlParameterSource();
             sqlParameters.addValue("username", username);
             return this.namedParameterJdbcTemplate.queryForObject("SELECT username, password, enabled FROM users WHERE username = :username", sqlParameters, userRowMapper);
