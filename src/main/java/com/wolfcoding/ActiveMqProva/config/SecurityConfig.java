@@ -1,9 +1,6 @@
 package com.wolfcoding.ActiveMqProva.config;
 
 import com.wolfcoding.ActiveMqProva.auth2.JwtRequestFilter;
-import com.wolfcoding.ActiveMqProva.controller.AuthController;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -44,7 +41,6 @@ public class SecurityConfig {
         http.csrf().disable()
                 .authorizeRequests()
                 .antMatchers("/api/auth/login").permitAll()
-//                .antMatchers("/validate-token").permitAll() // Aperto
                 .antMatchers("/admin/**").hasRole("ADMIN")
                 .antMatchers("/user/**").hasRole("USER")
                 .anyRequest().authenticated()
