@@ -31,16 +31,10 @@ public class AuthController {
     @Autowired
     private JWTService jwtService;
 
-//    @Autowired
-//    private PasswordEncoder passwordEncoder;
-
 
     @PostMapping("/login")
     public Map<String, String> login(@RequestParam String username, @RequestParam String password) {
         logger.info("Tentativo di login per l'utente: {}", username);
-
-        // Autentica l'utente
-
 
         // Ottieni i dettagli dell'utente autenticato
         UserDetails userDetails = (UserDetails) authenticationManager.authenticate(
@@ -61,13 +55,6 @@ public class AuthController {
         return response;
     }
 
-//
-//    @PostMapping("/test-password")
-//    public ResponseEntity<?> testPassword(@RequestParam String password) {
-//        String hashedPassword = "$2a$12$FI6GNtTJfVnufTY2op5gl.i.lbvr4WarfBLkVo3pinUUlysR4PN5a";
-//        boolean matches = passwordEncoder.matches(password, hashedPassword);
-//        return ResponseEntity.ok("Password corrisponde? " + matches);
-//    }
 
 }
 

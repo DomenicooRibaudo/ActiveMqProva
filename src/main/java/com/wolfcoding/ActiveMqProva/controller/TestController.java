@@ -21,10 +21,14 @@ public class TestController {
 
     @PostMapping("/string")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public String getString() {
+    public String getStringAdmin() {
         return "Hello World!";
     }
 
+    @PostMapping("/string-user")
+    public String getStringUser() {
+        return "Hello User!";
+    }
 
     @PostMapping("/validate-token")
     public void validateTokenManually(@RequestParam String token) {
