@@ -42,7 +42,7 @@ public class UserRowMapper implements RowMapper<UserDetails> {
 
     private List<GrantedAuthority> getAuthorities(int userId) {
         String query = "SELECT a.name FROM authorities a " +
-                "JOIN testdb.user_authorities ua ON a.id = ua.authority_id " +
+                "JOIN public.user_authorities ua ON a.id = ua.authority_id " +
                 "WHERE ua.user_id = ?";
         return jdbcTemplate.query(query, new Object[]{userId}, (rs, rowNum) ->
                 new SimpleGrantedAuthority(rs.getString("name"))

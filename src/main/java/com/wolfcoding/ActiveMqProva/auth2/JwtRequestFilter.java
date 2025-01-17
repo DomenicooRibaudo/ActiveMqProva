@@ -1,8 +1,14 @@
 package com.wolfcoding.ActiveMqProva.auth2;
 
 
+import com.wolfcoding.ActiveMqProva.controller.AuthController;
+import io.jsonwebtoken.security.SignatureException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -15,12 +21,18 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
 
     private final UserDetailsService userDetailsService;
+
+    private static final Logger logger = LoggerFactory.getLogger(JwtRequestFilter.class);
+
 
     @Autowired
     private JWTService service;
@@ -34,6 +46,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+        SecurityContextHolder.clearContext();
         final String authorizationHeader = request.getHeader("Authorization");
 
         String username = null;
@@ -43,27 +56,34 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             jwt = authorizationHeader.substring(7); // Rimuove "Bearer " dall'inizio
             try {
-                username = service.extractUserName(jwt); // Estrae il nome utente dal token
+                // Estrai il nome utente dal token
+                username = service.extractUserName(jwt);
+
+                // Estrai il ruolo dal token
+                String role = service.extractClaims(jwt, claims -> claims.get("role", String.class));
+                logger.info("Ruolo estratto dal token: {}", role);
+
+                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+                    if (!service.isTokenExpired(jwt)) {
+                        // Crea l'autenticazione con il ruolo corretto
+                        List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(role));
+                        UsernamePasswordAuthenticationToken authenticationToken =
+                                new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
+
+                        authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                    }
+                }
             } catch (Exception e) {
-                logger.error("Errore durante l'estrazione del nome utente dal token: {}" + e);
-            }
-        }
-
-        // Se il token è valido e l'utente non è ancora autenticato
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
-            // Validare il token
-            if (!service.isTokenExpired(jwt)) {
-                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
-                authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                logger.error("Errore durante l'elaborazione del token JWT: {}", e.getMessage());
             }
         }
 
         // Continua con il prossimo filtro nella catena
         filterChain.doFilter(request, response);
     }
+
 
 }

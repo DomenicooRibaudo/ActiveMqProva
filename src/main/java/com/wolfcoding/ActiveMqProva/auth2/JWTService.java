@@ -1,8 +1,13 @@
 package com.wolfcoding.ActiveMqProva.auth2;
 
+import com.wolfcoding.ActiveMqProva.controller.AuthController;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.SignatureException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -21,22 +26,14 @@ public class JWTService {
 
     private static final int EXPIRATION_TIME = 86400000;
 
+    private static final Logger logger = LoggerFactory.getLogger(JWTService.class);
 
-    public JWTService() throws NoSuchAlgorithmException {
-        // Sostituisci questa stringa con la chiave Base64 generata dal passo precedente
-        String secretBase64 = keyGenerator();
+
+    public JWTService(@Value("${jwt.secret}") String secretBase64) throws NoSuchAlgorithmException {
         byte[] decodedKey = java.util.Base64.getDecoder().decode(secretBase64);
         this.key = new SecretKeySpec(decodedKey, SignatureAlgorithm.HS512.getJcaName());
     }
 
-    private String keyGenerator() throws NoSuchAlgorithmException {
-        KeyGenerator keyGen = KeyGenerator.getInstance("HmacSHA512");
-        keyGen.init(512); // Genera una chiave di 512 bit
-        SecretKey secretKey = keyGen.generateKey();
-        String encodedKey = java.util.Base64.getEncoder().encodeToString(secretKey.getEncoded());
-        System.out.println("Chiave Base64: " + encodedKey);
-        return encodedKey;
-    }
 
     public String generateToken(String username, String role) {
         return Jwts.builder()
@@ -49,20 +46,36 @@ public class JWTService {
     }
 
     public String extractUserName(String token) {
-        return extractClaims(token, Claims::getSubject);
+        logger.info("Token ricevuto: {}", token);
+        String username = extractClaims(token, Claims::getSubject);
+        String role = extractClaims(token, claims -> claims.get("role", String.class));
+        logger.info("Ruolo estratto dal token: {}", role);
+        return username;
+
     }
 
     public <T> T extractClaims(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-        return claimsResolver.apply(claims);
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+            logger.info("Token verificato con successo. Claims: {}", claims);
+            return claimsResolver.apply(claims);
+        } catch (SignatureException e) {
+            logger.error("Algoritmo di firma non corrisponde: {}", e.getMessage());
+            throw new SignatureException("Algoritmo di firma errato", e);
+        }
+
     }
 
 
     public boolean isTokenExpired(String token) {
         return extractClaims(token, Claims::getExpiration).before(new Date());
+    }
+
+    public SecretKey getKey() {
+        return key;
     }
 }
