@@ -1,6 +1,5 @@
 package com.wolfcoding.ActiveMqProva.auth2;
 
-import com.wolfcoding.ActiveMqProva.controller.AuthController;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -8,13 +7,10 @@ import io.jsonwebtoken.security.SignatureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.function.Function;

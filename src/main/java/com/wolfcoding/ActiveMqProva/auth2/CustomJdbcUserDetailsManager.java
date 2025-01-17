@@ -1,4 +1,4 @@
-package com.wolfcoding.ActiveMqProva.config;
+package com.wolfcoding.ActiveMqProva.auth2;
 
 import com.wolfcoding.ActiveMqProva.repository.UserRepository;
 import com.wolfcoding.ActiveMqProva.repository.rowmapper.UserRowMapper;
